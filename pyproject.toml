@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "paper_to_skill"
+version = "1.0.0"
+description = "A Meta-Compiler Pipeline that translates ML papers to optimized kernels"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "pynvml",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
