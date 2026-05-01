@@ -47,6 +47,17 @@ Ensure the correct system dependencies (`torch`, `triton`, `pynvml`) are install
 pip install -e . --break-system-packages
 ```
 
+### Configure Endpoint Credentials
+
+Create a `.env` file in the project root directory. This file is parsed by the meta-compiler to access your inference provider or local endpoint:
+
+```text
+OPENAI_API_BASE="http://localhost:8000/v1"
+OPENAI_API_KEY="your-api-key"
+```
+
+*Note: If you're running open-source models locally via **vLLM** (e.g., Llama 3 8B), keep your API Base pointed to your local instance.*
+
 ---
 
 ## 💻 Standardized CLI Compilation & Deployment
