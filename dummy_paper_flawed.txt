@@ -1,0 +1,16 @@
+# RESEARCH PAPER EXTRACT: Novel Latent Diffusion Backbone (FLAWED EXTRACT)
+
+## Abstract
+We propose a novel, highly optimized continuous-time latent diffusion backbone for accelerated image generation. 
+
+## Tensor Definitions
+- `input_latent`: The incoming latent tensor. Shape: [B, 4, 64, 64], Dtype: float32.
+- `timestep`: The noise scheduling step. Shape: [B], Dtype: int64.
+- `output_latent`: The denoised latent tensor. (Intentionally omitted dimensions and dtypes).
+
+## Hardware Constraints
+- Minimal VRAM requirement: 12GB.
+- CUDA Architecture Target: Ampere or newer.
+
+## Objective Function
+- Loss function: Mean Squared Error (MSE) computed between predicted noise and true noise.
