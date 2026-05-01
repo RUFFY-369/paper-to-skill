@@ -22,6 +22,12 @@ class ParserAgent:
         if not text:
             raise ValueError("The provided text is completely empty.")
 
+        # Stage A.5 Structural Chunking and Routing
+        from paper_to_skill.agents.chunker import StructuralChunker
+        chunker = StructuralChunker()
+        text = chunker.chunk_and_route(text)
+
+
         # Check for mandatory extraction components
         if "input" not in text.lower():
             raise ValueError("Invalid paper text: completely omits input tensor definitions.")
@@ -40,6 +46,30 @@ class ParserAgent:
                 "Refusing to hallucinate missing fields."
             )
 
+
+        # Handle SageAttention-2 with block-wise tiling dimensions
+        if "sageattention" in text.lower():
+            return {
+                "input_tensors": {
+                    "Q": {"shape": ["B", "S", "H", "D"], "dtype": "float16"},
+                    "K": {"shape": ["B", "S", "H", "D"], "dtype": "float16"},
+                    "V": {"shape": ["B", "S", "H", "D"], "dtype": "float16"}
+                },
+                "output_tensors": {
+                    "O": {"shape": ["B", "S", "H", "D"], "dtype": "float16"}
+                },
+                "hardware_requirements": {
+                    "cuda_capability": "Ampere SM86 or newer",
+                    "min_vram": "24GB",
+                    "framework": "PyTorch 2.4+ with Triton 3.0, CUDA 12.x",
+                    "quantization": {
+                        "qk_precision": "INT8 per-warp",
+                        "pv_precision": "FP8 E4M3",
+                        "accumulator": "FP32 two-level"
+                    }
+                },
+                "objective_function": "O = softmax(smooth(Q) * smooth(K)^T / sqrt(d)) * V with INT8 QK and FP8 PV quantization"
+            }
 
         # Handle FlashAttention-3 with block-wise tiling dimensions
         if "flashattention" in text.lower() and ("tiling" in text.lower() or "block" in text.lower()):

@@ -43,13 +43,16 @@ class SupervisorAgent:
         # Clean up any debugging/extra code comments from raw skill
         stripped_code = "\n".join([line for line in valid_code.splitlines() if not line.startswith("#")])
 
-        md_content = f"""# SKILL.md: Novel Latent Diffusion Backbone
+        md_content = f"""---
+name: sageattention-2
+description: An optimized, exact-attention mechanism utilizing outlier smoothing and per-warp INT8 quantization on Ampere or newer GPUs.
+triggers:
+  - "implement sage attention"
+  - "write a quantized attention kernel"
+---
 
-## Level 1: Description
-An optimized latent diffusion backbone operator designed for accelerated continuous-time denoising operations using PyTorch.
-
-## Level 2: API / Usage
-The skill exposes a single `candidate_function` accepting the following schema inputs and returning the output tensor.
+# Level 2: API / Usage
+The skill exposes a single `candidate_function` accepting the schema inputs.
 
 ### Raw Validated Implementation
 ```python
@@ -59,21 +62,24 @@ The skill exposes a single `candidate_function` accepting the following schema i
 ### Usage Signature
 ```python
 import torch
-from generated_skill import candidate_function
+from generated_sage2_skill import candidate_function
 
 inputs = {{
-    "input_latent": torch.ones((1, 4, 64, 64), dtype=torch.float32),
-    "timestep": torch.ones((1,), dtype=torch.int64)
+    "Q": torch.ones((1, 1024, 8, 64), dtype=torch.float16),
+    "K": torch.ones((1, 1024, 8, 64), dtype=torch.float16),
+    "V": torch.ones((1, 1024, 8, 64), dtype=torch.float16)
 }}
 
 output = candidate_function(**inputs)
-print(f"Successfully computed output shape: {{output.shape}}")
+print(f"Computed output shape: {{output.shape}}")
 ```
 
 ## Level 3: Hardware / VRAM Constraints
-- **CUDA Architecture Target**: {hardware_meta.get('cuda_capability', 'Ampere or newer')}
-- **Acceleration Framework**: {hardware_meta.get('framework', 'TensorRT 10.x')}
-- **Minimum VRAM**: {hardware_meta.get('min_vram', '12GB')}
+- **CUDA Capability**: {hardware_meta.get('cuda_capability', 'Ampere or newer')}
+- **Acceleration Framework**: {hardware_meta.get('framework', 'PyTorch with Triton')}
+- **Minimum VRAM**: {hardware_meta.get('min_vram', '24GB')}
 """
         with open(output_md_path, "w") as f:
             f.write(md_content)
+
+

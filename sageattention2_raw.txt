@@ -1,0 +1,17 @@
+SageAttention-2: Efficient Attention with Thorough Outlier Smoothing and Per-thread INT4 Quantization
+
+Input Tensors:
+- Q: [B, S, H, D] with float16
+- K: [B, S, H, D] with float16
+- V: [B, S, H, D] with float16
+
+Output Tensors:
+- O: [B, S, H, D] with float16
+
+Hardware Requirements:
+- Ampere SM86 or newer
+- 24GB VRAM
+- Framework: PyTorch 2.4+ with Triton 3.0, CUDA 12.x
+
+Objective:
+Compute O = softmax(smooth(Q) * smooth(K)^T / sqrt(d)) * V using INT8 QK and FP8 PV quantization.
