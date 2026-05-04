@@ -1,111 +1,65 @@
-# Paper-to-Skill Meta-Compiler Pipeline
+# Paper-to-Skill
 
-An enterprise-grade meta-compiler designed to autonomously extract math formulations and tensor requirements from technical AI papers and output fully functional, high-performance Triton kernels crystallized as **agentskills.io** compliant skill packages.
+Compile ML research papers into optimized Triton kernels for `agentskills.io`.
 
----
+## Features
 
-## 🚀 Architectural Design & Features
+*   **Constraint Extraction**: Parses PDFs/markdown to extract math formulations and tensor requirements.
+*   **AST Safety Sandbox**: Validates generated code via AST inspection to block unsafe operations (`os`, `subprocess`, etc.).
+*   **V2 Multi-File Synthesis**: Separates kernels from PyTorch modules (`triton_kernel.py` vs `nn_module.py`).
+*   **Hardware-Aware Routing**: Targets specific GPU architectures (`sm_80`, `sm_86`, `sm_90`).
+*   **Hermes Integration**: Generates compliant `SKILL.md` with YAML frontmatter for automatic indexing.
 
-1. **Stage A.5: Structural Chunking and Routing**
-   - Automatically breaks long PDF and markdown technical manuals by headers.
-   - Aggressively strips out irrelevant text (e.g., References, Related Work, Acknowledgements) and passes only the math formulations, architecture definitions, and constraints directly to the reasoning parser to prevent context degradation.
+## Security
 
-2. **Zero-Trust RESTRICTED-AST Execution Sandbox**
-   - Implements a strict exact-match AST inspection pass to check generated code before execution.
-   - Blocks unauthorized system modules and calls (`os.`, `subprocess.`, `eval`, `exec`, etc.) to prevent host escape vulnerabilities.
-
-3. **V2 Multi-File Synthesizer Architecture**
-   - Generates and packages direct directory file trees, separating Triton kernels from high-level PyTorch operator execution modules (`nn_module.py` vs `triton_kernel.py`).
-
-4. **Dynamic Hardware Matrix Routing**
-   - Cross-compiles generated target source code by evaluating backward/forward hardware capability matrices (`sm_80`, `sm_86`, `sm_90`).
-
-5. **The Filesystem Handshake & Progressive Disclosure**
-   - Directly encapsulates validated kernel operators into directory-based standalone modules ready for direct filesystem ingestion.
-   - Employs strict **YAML frontmatter** definitions at the top of the skill markdown to allow for automated Hermes SkillRegistry indexing and dynamic progressive context loading.
-
----
-
-## 🔒 Security Configuration: Unsafe Bare-Metal Guardrail
-
-Executing untrusted, AI-generated code directly via a raw subprocess on the host machine is a high-risk security action. To opt-in to bare-metal direct execution acceleration on your trusted cloud GPU clusters (e.g., Vast.ai instances), you must authorize it explicitly:
+By default, code execution is restricted. To enable local bare-metal execution (e.g., on cloud GPU instances):
 
 ```bash
 export ALLOW_DANGER_RUN_BARE_METAL=true
 ```
 
 > [!WARNING]
-> Activating the `ALLOW_DANGER_RUN_BARE_METAL` flag bypasses default host isolation. Exercise extreme caution and manually verify generated code.
+> This flag bypasses host isolation. Always verify generated code before execution.
 
----
-
-## 🛠️ Installation & Setup
-
-Ensure the correct system dependencies (`torch`, `triton`, `pynvml`) are installed. To set up the meta-compiler in editable mode:
+## Setup
 
 ```bash
-pip install -e . --break-system-packages
+pip install -e .
 ```
 
-### Configure Endpoint Credentials
+### Environment
 
-Create a `.env` file in the project root directory. This file is parsed by the meta-compiler to access your inference provider or local endpoint:
+Create a `.env` in the project root:
 
 ```text
 OPENAI_API_BASE="http://localhost:8000/v1"
 OPENAI_API_KEY="your-api-key"
 ```
 
-*Note: If you're running open-source models locally via **vLLM** (e.g., Llama 3 8B), keep your API Base pointed to your local instance.*
+## Usage
 
----
-
-## 💻 Standardized CLI Compilation & Deployment
-
-The meta-compiler operates as a clean system tool directly via Python:
-
-### 1. Compile a Technical Paper into a Skill Directory
+### 1. Compile Paper to Skill
 ```bash
-python -m paper_to_skill compile --pdf <path_to_paper.txt> --target <sm_86|sm_89|sm_90> --out ./skills/
+python -m paper_to_skill compile --pdf paper.txt --target sm_86 --out ./skills/
 ```
 
-### 2. Install a Generated Skill to the Hermes Skill Registry
-This command carries out the filesystem handshake, moving the output folder to the Hermes storage path:
+### 2. Install to Hermes Registry
 ```bash
-python -m paper_to_skill install --dir ./skills/<compiled_skill_directory>/
+python -m paper_to_skill install --dir ./skills/sageattention-2/
 ```
-*Alternatively, you can decouple the registries entirely by adding the compiled skill folder to the `external_dirs` array within your `~/.hermes/config.yaml`.*
 
----
+## Verification
 
-## 🤖 Invoking Your Skill in Hermes
-
-Once the skill is installed, launch your Hermes Agent and test direct execution by using the specific slash command trigger:
+Once installed, invoke the skill directly in Hermes:
 
 ```bash
-hermes chat -q "/sageattention-2 'Implement the optimized attention kernel over this Tensor setup'"
+hermes chat -q "/sageattention-2 'Run attention forward pass'"
 ```
 
-This instructs Hermes to instantly load the custom **agentskills.io** compatible `SKILL.md` file and dynamic `candidate_function` module directly into its active context.
+### Comparison
 
----
-
-## 📊 Performance & Accuracy Comparison: Baseline vs. Compiled Skill
-
-### ❌ Baseline Hermes (Without Skill)
-When asked to write a kernel for a newly released technical paper like **SageAttention-2** without dynamic skill context, the model lacks mathematical data and reverts to empty placeholders and skeletal code:
-
-```python
-# --- Outlier Smoothing Integration Placeholder ---
-# SageAttention-2's specific outlier smoothing method would need to be applied here.
-# Without the exact algorithm, I'll represent it as a placeholder.
-qk = apply_outlier_smoothing(qk, threshold, factor)
-```
-
-### ✅ Paper-to-Skill Meta-Compiler (With Installed Skill)
-By using the dynamic **Paper-to-Skill** extracted context, Hermes uses real, validated code and returns perfectly calculated output shapes over the host GPU Tensor layouts:
-
-```text
-CUDA is available. Using GPU.
-Computed output shape: torch.Size([1, 1024, 8, 64])
-```
+| Feature | Baseline LLM | Paper-to-Skill |
+| :--- | :--- | :--- |
+| **Math Accuracy** | Hallucinated/Placeholders | Extracted from Source |
+| **Quantization** | Generic Fallback | INT8/FP8 per paper |
+| **Performance** | Suboptimal/Non-runnable | Optimized Triton Kernel |
