@@ -20,3 +20,8 @@ env/
 # Local IDEs
 .vscode/
 .idea/
+
+# Distribution / Build
+*.egg-info/
+dist/
+build/
